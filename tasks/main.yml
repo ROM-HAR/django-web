@@ -16,13 +16,20 @@
         cmd: virtualenv django_env
  
     - name: activate django_env virtual environment
-      shell: source django_env/bin/activate
+      shell: "source {{ lookup('env', 'PWD') }}/django_env/bin/activate"
       args:
         executable: /bin/bash
     
     - name: pip install requirements
       pip:
         requirements: "{{ lookup('env', 'PWD') }}/django/django/requirements.txt"
+        virtualenv: "{{ lookup('env', 'PWD') }}/django_env"
+    
+    - name: pip install mysql-python
+      pip:
+        name: mysql-python
+        virtualenv: "{{ lookup('env', 'PWD') }}/django_env"
+
 
     - name: assign ENGINE
       lineinfile: 
@@ -60,13 +67,9 @@
         regexp: 'PORT'
         line: "'PORT': '3306',"
 
- #   - name: execute script
- #     script:  "{{ lookup('env', 'PWD') }}/django/django/notejam/manage.py dumpdata --indent=2 auth > initial_data.json"
- #     args:
- #       executable: python
     
     - name: execute script
-      script:  "{{ lookup('env', 'PWD') }}/django/django/notejam/manage.py syncdb --noinput"
+      script:  "{{ lookup('env', 'PWD') }}/django/django/notejam/manage.py syncdb"
       args:
         executable: python
 
