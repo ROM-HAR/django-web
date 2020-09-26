@@ -1,67 +1,87 @@
 ---
-# tasks file for test_web
+# tasks file for django_web
 
     - name: git repo
       git:
         repo: 'https://github.com/komarserjio/notejam.git'     
         dest: ./django
         force: yes
-        
+
+    - name: pip install virtualenv
+      pip:
+        name: virtualenv
+
+    - name: create virtual environment django_env
+      shell:
+        cmd: virtualenv django_env
+ 
+    - name: activate django_env virtual environment
+      shell: source django_env/bin/activate
+      args:
+        executable: /bin/bash
+    
     - name: pip install requirements
       pip:
-        requirements: /home/ansible/Demo/django/django/requirements.txt        
+        requirements: "{{ lookup('env', 'PWD') }}/django/django/requirements.txt"
 
     - name: assign ENGINE
       lineinfile: 
-        path: /home/ansible/Demo/django/django/notejam/notejam/settings.py
+        path:  "{{ lookup('env', 'PWD') }}/django/django/notejam/notejam/settings.py"
         regexp: 'ENGINE'
         line: "'ENGINE': 'django.db.backends.mysql',"  
 
     - name: assign NAME
       lineinfile:
-        path: /home/ansible/Demo/django/django/notejam/notejam/settings.py
+        path:  "{{ lookup('env', 'PWD') }}/django/django/notejam/notejam/settings.py"
         regexp: 'NAME'
         line: "'NAME': 'django_db',"
 
     - name: assign USER
       lineinfile:
-        path: /home/ansible/Demo/django/django/notejam/notejam/settings.py
+        path:  "{{ lookup('env', 'PWD') }}/django/django/notejam/notejam/settings.py"
         regexp: 'USER'
         line: "'USER': 'db_user',"
 
     - name: assign PASSWORD
       lineinfile:
-        path: /home/ansible/Demo/django/django/notejam/notejam/settings.py
+        path:  "{{ lookup('env', 'PWD') }}/django/django/notejam/notejam/settings.py"
         regexp: 'PASSWORD'
         line: "'PASSWORD': 'Passw0rd',"
 
     - name: assign HOST
       lineinfile:
-        path: /home/ansible/Demo/django/django/notejam/notejam/settings.py
+        path:  "{{ lookup('env', 'PWD') }}/django/django/notejam/notejam/settings.py"
         regexp: 'HOST'
         line: "'HOST': 'localhost',"
 
     - name: assign PORT
       lineinfile:
-        path: /home/ansible/Demo/django/django/notejam/notejam/settings.py
+        path:  "{{ lookup('env', 'PWD') }}/django/django/notejam/notejam/settings.py"
         regexp: 'PORT'
         line: "'PORT': '3306',"
 
  #   - name: execute script
- #     script: /home/ansible/Demo/django/django/notejam/manage.py dumpdata --indent=2 auth > initial_data.json
+ #     script:  "{{ lookup('env', 'PWD') }}/django/django/notejam/manage.py dumpdata --indent=2 auth > initial_data.json"
  #     args:
  #       executable: python
     
     - name: execute script
-      script: /home/ansible/Demo/django/django/notejam/manage.py syncdb --noinput
+      script:  "{{ lookup('env', 'PWD') }}/django/django/notejam/manage.py syncdb --noinput"
       args:
         executable: python
 
     - name: execute script
-      script: /home/ansible/Demo/django/django/notejam/manage.py migrate
+      script:  "{{ lookup('env', 'PWD') }}/django/django/notejam/manage.py migrate"
       args:
         executable: python
 
+    - name: Create file django_web.service file
+      copy:
+        dest: "/etc/systemd/system/django_web.service"
+        content: |
+          [Service]
+          ExecStart="{{ lookup('env', 'PWD') }}/django/django/notejam/manage.py runserver"    
+  
     - name: Start running the server
       systemd:
         name: django_web.service

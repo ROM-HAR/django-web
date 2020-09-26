@@ -31,7 +31,7 @@ Including an example of how to use your role (for instance, with variables passe
      PYTHONPATH: /home/ansible/Demo/django/django/notejam 
  
    roles:
-    - test_web
+    - django_web
 
 
 License
